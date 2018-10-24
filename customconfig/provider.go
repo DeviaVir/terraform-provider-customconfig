@@ -4,12 +4,8 @@ import (
 	"context"
 	"time"
 
-	"encoding/json"
-	"fmt"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/pkg/errors"
-	"log"
-	"os"
 )
 
 var (
@@ -22,7 +18,7 @@ func Provider() *schema.Provider {
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{},
 		ResourcesMap: map[string]*schema.Resource{},
-    DataSourceMap: map[string]*schema.Resource{
+    DataSourcesMap: map[string]*schema.Resource{
       "customconfig_google_backend": dataSourceGoogleBackend(),
     },
 		ConfigureFunc: providerConfigure,

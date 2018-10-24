@@ -6,10 +6,10 @@ import (
   "github.com/hashicorp/terraform/helper/schema"
 )
 
-func dataSourceGoogleBackend() *.schema.Resource {
+func dataSourceGoogleBackend() *schema.Resource {
   return &schema.Resource{
     Read: dataSourceGoogleBackendRead,
-    Schema: map[string]*.schema.Schema{
+    Schema: map[string]*schema.Schema{
       "instance_groups": {
         Type: schema.TypeList,
         Elem: &schema.Schema{
