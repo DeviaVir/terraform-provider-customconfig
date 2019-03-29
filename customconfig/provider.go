@@ -20,6 +20,7 @@ func Provider() *schema.Provider {
 		ResourcesMap: map[string]*schema.Resource{},
     DataSourcesMap: map[string]*schema.Resource{
       "customconfig_google_backend": dataSourceGoogleBackend(),
+      "customconfig_google_forwarding_config": dataSourceGoogleBackend(),
     },
 		ConfigureFunc: providerConfigure,
 	}
