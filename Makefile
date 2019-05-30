@@ -15,11 +15,11 @@ GOTAGS ?=
 GOMAXPROCS ?= 4
 
 # Get the project metadata
-GOVERSION := 1.9.3
+GOVERSION := 1.12
 PROJECT := $(CURRENT_DIR:$(GOPATH)/src/%=%)
 OWNER := $(notdir $(patsubst %/,%,$(dir $(PROJECT))))
 NAME := $(notdir $(PROJECT))
-VERSION := 0.0.2
+VERSION := 0.1.0
 EXTERNAL_TOOLS = \
 	github.com/golang/dep/cmd/dep
 
