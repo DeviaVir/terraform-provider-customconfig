@@ -12,11 +12,11 @@ GOFILES ?= $(shell go list $(TEST) | grep -v /vendor/)
 GOTAGS ?=
 
 # Number of procs to use
-GOMAXPROCS ?= 4
+GOMAXPROCS ?= 8
 
 # Get the project metadata
-GOVERSION := 1.12
-PROJECT := $(CURRENT_DIR:$(GOPATH)/src/%=%)
+GOVERSION := 1.13
+PROJECT := github.com/DeviaVir/terraform-provider-customconfig
 OWNER := $(notdir $(patsubst %/,%,$(dir $(PROJECT))))
 NAME := $(notdir $(PROJECT))
 VERSION := 0.1.1
@@ -57,19 +57,21 @@ define make-xc-target
 		@printf "%s%20s %s\n" "-->" "${1}/${2}:" "${PROJECT}"
 		@docker run \
 			--interactive \
+			--dns 1.1.1.1 \
+			--dns 1.0.0.1 \
+			--dns 8.8.8.8 \
+			--dns 8.4.4.8 \
 			--rm \
-			--dns="8.8.8.8" \
 			--volume="${CURRENT_DIR}:/go/src/${PROJECT}" \
 			--workdir="/go/src/${PROJECT}" \
 			"golang:${GOVERSION}" \
-			go get -u github.com/DeviaVir/terraform-provider-customconfig && \
 			env \
-			  GO111MODULE="on" \
+				GO111MODULE="on" \
 				CGO_ENABLED="0" \
 				GOOS="${1}" \
 				GOARCH="${2}" \
 				go build \
-					-mod vendor \
+				  -mod vendor \
 				  -a \
 					-o="pkg/${1}_${2}/${NAME}_v${VERSION}${3}" \
 					-ldflags "${LD_FLAGS}" \
@@ -113,7 +115,7 @@ test:
 		xargs -t -n4 go test $(TESTARGS) -timeout=30s -parallel=4
 
 # dist builds the binaries and then signs and packages them for distribution
-dist:
+dist: vendor
 ifndef GPG_KEY
 	@echo "==> ERROR: No GPG key specified! Without a GPG key, this release cannot"
 	@echo "           be signed. Set the environment variable GPG_KEY to the ID of"
@@ -190,7 +192,7 @@ _sign:
 		--local-user "${GPG_KEY}" \
 		--message "Version ${VERSION}" \
 		--sign \
-		"v${VERSION}" master
+		"v${VERSION}"
 	@echo "--> Do not forget to run:"
 	@echo ""
 	@echo "    git push && git push --tags"
