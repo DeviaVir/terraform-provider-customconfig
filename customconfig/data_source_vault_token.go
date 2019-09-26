@@ -4,11 +4,13 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
+	"net/http"
+	"os"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/vault/api"
 )
 
 func vaultTokenDataSource() *schema.Resource {
@@ -71,34 +73,34 @@ func vaultTokenDataSource() *schema.Resource {
 }
 
 func vaultTokenDataSourceRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*api.Client)
-
 	roleID := d.Get("role_id").(string)
 	secretID := d.Get("secret_id").(string)
 	log.Printf("[DEBUG] Reading %s %d from Vault", roleID, secretID)
 
 	backend := d.Get("backend").(string)
 
-	authParams := map[string]string{
+	requestBody, err := json.Marshal(map[string]string{
 		"role_id":   roleID,
 		"secret_id": secretID,
+	})
+	if err != nil {
+		return fmt.Errorf("error creating request body json: %s", err)
 	}
 
-	r := client.NewRequest("GET", "/v1/"+fmt.Sprintf("auth/%s/login", backend))
-	for k, v := range authParams {
-		r.Params.Set(k, v)
+	addr := os.Getenv("VAULT_ADDR")
+	resp, err := http.Post(fmt.Sprintf("%s/v1/auth/%s/login", addr, backend), "application/json", bytes.NewBuffer(requestBody))
+	if err != nil {
+		return fmt.Errorf("error talking to Vault: %s", err)
 	}
-	resp, err := client.RawRequest(r)
-	if resp != nil {
-		defer resp.Body.Close()
-	}
+
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return fmt.Errorf("error reading from Vault: %s", err)
 	}
 
-	buf := new(bytes.Buffer)
-	buf.ReadFrom(resp.Body)
-	data := buf.String()
+	data := string(body)
 	d.Set("data_json", string(data))
 
 	var secret map[string]interface{}

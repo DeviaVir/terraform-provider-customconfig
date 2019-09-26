@@ -19,7 +19,7 @@ GOVERSION := 1.13
 PROJECT := github.com/DeviaVir/terraform-provider-customconfig
 OWNER := $(notdir $(patsubst %/,%,$(dir $(PROJECT))))
 NAME := $(notdir $(PROJECT))
-VERSION := 0.1.2
+VERSION := 0.1.3
 EXTERNAL_TOOLS = \
 	github.com/golang/dep/cmd/dep
 
