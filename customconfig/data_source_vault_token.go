@@ -41,10 +41,30 @@ func vaultTokenDataSource() *schema.Resource {
 				Description: "JSON-encoded secret data read from Vault.",
 			},
 
-			"data": {
-				Type:        schema.TypeMap,
+			"token": {
+				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Map of strings read from Vault.",
+			},
+
+			"lease_renewable": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				ForceNew:    true,
+				Computed:    true,
+				Description: "Flag to allow the token to be renewed",
+			},
+
+			"lease_duration": {
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "The token lease duration.",
+			},
+
+			"lease_start_time": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The token lease started on.",
 			},
 		},
 	}
@@ -89,7 +109,6 @@ func vaultTokenDataSourceRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	d.SetId(secret["request_id"].(string))
-	d.Set("lease_id", secret["lease_id"].(string))
 	d.Set("lease_duration", secret["lease_duration"].(string))
 	d.Set("lease_renewable", secret["lease_renewable"].(string))
 	d.Set("lease_start_time", time.Now().Format("RFC3339"))
