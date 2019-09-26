@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/pkg/errors"
 )
 
@@ -16,12 +16,12 @@ var (
 // Provider returns the actual provider instance.
 func Provider() *schema.Provider {
 	return &schema.Provider{
-		Schema: map[string]*schema.Schema{},
+		Schema:       map[string]*schema.Schema{},
 		ResourcesMap: map[string]*schema.Resource{},
-    DataSourcesMap: map[string]*schema.Resource{
-      "customconfig_google_backend": dataSourceGoogleBackend(),
-      "customconfig_google_forwarding_config": dataSourceGoogleBackend(),
-    },
+		DataSourcesMap: map[string]*schema.Resource{
+			"customconfig_google_backend":           dataSourceGoogleBackend(),
+			"customconfig_google_forwarding_config": dataSourceGoogleBackend(),
+		},
 		ConfigureFunc: providerConfigure,
 	}
 }

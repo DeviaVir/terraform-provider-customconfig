@@ -64,10 +64,12 @@ define make-xc-target
 			"golang:${GOVERSION}" \
 			go get -u github.com/DeviaVir/terraform-provider-customconfig && \
 			env \
+			  GO111MODULE="on" \
 				CGO_ENABLED="0" \
 				GOOS="${1}" \
 				GOARCH="${2}" \
 				go build \
+					-mod vendor \
 				  -a \
 					-o="pkg/${1}_${2}/${NAME}_v${VERSION}${3}" \
 					-ldflags "${LD_FLAGS}" \
@@ -83,15 +85,23 @@ define make-xc-target
 endef
 $(foreach goarch,$(XC_ARCH),$(foreach goos,$(XC_OS),$(eval $(call make-xc-target,$(goos),$(goarch),$(if $(findstring windows,$(goos)),.exe,)))))
 
-# deps updates all dependencies
-deps:
-	@dep ensure -update
-	@dep prune
+# vendor pulls and tidies all dependencies
+vendor:
+	@GO111MODULE=on go mod vendor
+	@GO111MODULE=on go mod tidy
+.PHONY: vendor
+
+# vendor_update updates all dependencies
+vendor_update:
+	@GO111MODULE=on go get -u ./...
+	@$(MAKE) vendor
+.PHONY: vendor_update
 
 # dev builds and installs the plugin into ~/.terraform.d
-dev:
+dev: vendor
 	@mkdir -p "${PLUGIN_PATH}"
-	@go build \
+	@GO111MODULE=on go build \
+		-mod vendor \
 		-ldflags "${LD_FLAGS}" \
 		-tags "${GOTAGS}" \
 		-o "${PLUGIN_PATH}/terraform-provider-customconfig"

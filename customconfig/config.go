@@ -4,5 +4,5 @@ type Config struct {
 }
 
 func (c *Config) loadAndValidate() error {
-  return nil
+	return nil
 }

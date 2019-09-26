@@ -3,7 +3,7 @@ package customconfig
 import (
 	"strings"
 
-	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
 func dataSourceGoogleForwardingConfig() *schema.Resource {
