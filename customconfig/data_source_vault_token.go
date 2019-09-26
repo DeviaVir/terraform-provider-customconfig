@@ -105,9 +105,11 @@ func vaultTokenDataSourceRead(d *schema.ResourceData, meta interface{}) error {
 
 	var secret map[string]interface{}
 	json.Unmarshal([]byte(data), &secret)
-	errors := secret["errors"].(map[string]interface{})
-	if len(errors) > 0 {
-		return fmt.Errorf("vault returned error(s): %v", errors)
+	if secret["errors"] != nil {
+		errors := secret["errors"].(map[string]interface{})
+		if len(errors) > 0 {
+			return fmt.Errorf("vault returned error(s): %v", errors)
+		}
 	}
 
 	d.SetId(secret["request_id"].(string))
