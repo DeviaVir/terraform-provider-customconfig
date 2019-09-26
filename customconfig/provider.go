@@ -21,6 +21,7 @@ func Provider() *schema.Provider {
 		DataSourcesMap: map[string]*schema.Resource{
 			"customconfig_google_backend":           dataSourceGoogleBackend(),
 			"customconfig_google_forwarding_config": dataSourceGoogleBackend(),
+			"customconfig_vault_token":              vaultTokenDataSource(),
 		},
 		ConfigureFunc: providerConfigure,
 	}
