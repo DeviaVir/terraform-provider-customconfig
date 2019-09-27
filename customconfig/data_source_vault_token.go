@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
@@ -46,6 +47,26 @@ func vaultTokenDataSource() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The role/secret generated Vault auth token.",
+			},
+
+			"renewable": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				ForceNew:    true,
+				Computed:    true,
+				Description: "Flag to allow the token to be renewed",
+			},
+
+			"lease_duration": {
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "The token lease duration.",
+			},
+
+			"lease_start_time": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The token lease started on.",
 			},
 		},
 	}
@@ -92,7 +113,12 @@ func vaultTokenDataSourceRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	d.SetId(secret["request_id"].(string))
+	d.Set("lease_duration", secret["lease_duration"].(float64))
+	d.Set("lease_renewable", secret["renewable"].(string))
+	d.Set("lease_start_time", time.Now().Format("RFC3339"))
+
 	auth := secret["auth"].(map[string]interface{})
+
 	d.Set("token", auth["client_token"].(string))
 
 	return nil
