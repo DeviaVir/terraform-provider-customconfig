@@ -46,7 +46,7 @@ func vaultTokenDataSource() *schema.Resource {
 			"token": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Map of strings read from Vault.",
+				Description: "The role/secret generated Vault auth token.",
 			},
 
 			"lease_renewable": {
@@ -113,7 +113,7 @@ func vaultTokenDataSourceRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	d.SetId(secret["request_id"].(string))
-	d.Set("lease_duration", secret["lease_duration"].(string))
+	d.Set("lease_duration", secret["lease_duration"].(float64))
 	d.Set("lease_renewable", secret["lease_renewable"].(string))
 	d.Set("lease_start_time", time.Now().Format("RFC3339"))
 
