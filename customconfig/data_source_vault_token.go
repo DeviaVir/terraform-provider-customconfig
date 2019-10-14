@@ -114,7 +114,7 @@ func vaultTokenDataSourceRead(d *schema.ResourceData, meta interface{}) error {
 
 	d.SetId(secret["request_id"].(string))
 	d.Set("lease_duration", secret["lease_duration"].(float64))
-	d.Set("lease_renewable", secret["renewable"].(string))
+	d.Set("lease_renewable", secret["renewable"].(bool))
 	d.Set("lease_start_time", time.Now().Format("RFC3339"))
 
 	auth := secret["auth"].(map[string]interface{})
