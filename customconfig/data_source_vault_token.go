@@ -68,6 +68,12 @@ func vaultTokenDataSource() *schema.Resource {
 				Computed:    true,
 				Description: "The token lease started on.",
 			},
+
+			"debug": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "Flag to write more data to the debug log",
+			},
 		},
 	}
 }
@@ -75,7 +81,11 @@ func vaultTokenDataSource() *schema.Resource {
 func vaultTokenDataSourceRead(d *schema.ResourceData, meta interface{}) error {
 	roleID := d.Get("role_id").(string)
 	secretID := d.Get("secret_id").(string)
-	log.Printf("[DEBUG] Reading %s %d from Vault", roleID, secretID)
+
+	debug := d.Get("debug").(bool)
+	if debug {
+		log.Printf("[DEBUG] Reading %s %d from Vault", roleID, secretID)
+	}
 
 	backend := d.Get("backend").(string)
 
@@ -101,6 +111,9 @@ func vaultTokenDataSourceRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	data := string(body)
+	if debug {
+		log.Printf("[DEBUG] Got %s from Vault", string(data))
+	}
 	d.Set("data_json", string(data))
 
 	var secret map[string]interface{}
