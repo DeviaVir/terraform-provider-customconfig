@@ -1,7 +1,7 @@
 package customconfig
 
 type Config struct {
-	TimeoutMinutes int
+	TimeoutSeconds int
 }
 
 func (c *Config) loadAndValidate() error {

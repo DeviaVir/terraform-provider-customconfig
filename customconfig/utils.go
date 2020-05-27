@@ -17,13 +17,13 @@ func hash(s string) string {
 	return hex.EncodeToString(sha[:])
 }
 
-func retry(retryFunc func() error, minutes int) error {
-	return retryTime(retryFunc, minutes)
+func retry(retryFunc func() error, seconds int) error {
+	return retryTime(retryFunc, seconds)
 }
 
-func retryTime(retryFunc func() error, minutes int) error {
+func retryTime(retryFunc func() error, seconds int) error {
 	wait := 1
-	return resource.Retry(time.Duration(minutes)*time.Minute, func() *resource.RetryError {
+	return resource.Retry(time.Duration(seconds)*time.Second, func() *resource.RetryError {
 		err := retryFunc()
 		if err == nil {
 			return nil

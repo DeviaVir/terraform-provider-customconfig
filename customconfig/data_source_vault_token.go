@@ -110,7 +110,7 @@ func vaultTokenDataSourceRead(d *schema.ResourceData, meta interface{}) error {
 			log.Printf("[DEBUG] Received secret %+v", secret)
 		}
 		return err
-	}, config.TimeoutMinutes)
+	}, config.TimeoutSeconds)
 	if err != nil {
 		return err
 	}
@@ -147,7 +147,7 @@ func vaultTokenDataSourceReadCall(requestBody []byte, addr, backend string, debu
 		log.Printf("[DEBUG] Got %s from Vault", string(data))
 	}
 
-	json.Unmarshal([]byte(data), &secret)
+	json.Unmarshal(body, &secret)
 	if secret["errors"] != nil {
 		return "", secret, fmt.Errorf("vault returned error(s): %#v", secret["errors"])
 	}
