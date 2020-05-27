@@ -100,9 +100,6 @@ func vaultTokenDataSourceRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	addr := os.Getenv("VAULT_ADDR")
-
-	var dataJSON string
-	var secret map[string]interface{}
 	err = retry(func() error {
 		dataJSON, secret, err := vaultTokenDataSourceReadCall(requestBody, addr, backend, debug)
 		if debug {
