@@ -109,21 +109,24 @@ func vaultTokenDataSourceRead(d *schema.ResourceData, meta interface{}) error {
 			log.Printf("[DEBUG] Received dataJSON %s", dataJSON)
 			log.Printf("[DEBUG] Received secret %+v", secret)
 		}
+
+		if secret != nil && dataJSON != "" {
+			d.SetId(secret["request_id"].(string))
+			d.Set("data_json", dataJSON)
+			d.Set("lease_duration", secret["lease_duration"].(float64))
+			d.Set("lease_renewable", secret["renewable"].(bool))
+			d.Set("lease_start_time", time.Now().Format("RFC3339"))
+
+			auth := secret["auth"].(map[string]interface{})
+
+			d.Set("token", auth["client_token"].(string))
+		}
+
 		return err
 	}, config.TimeoutSeconds)
 	if err != nil {
 		return err
 	}
-
-	d.SetId(secret["request_id"].(string))
-	d.Set("data_json", dataJSON)
-	d.Set("lease_duration", secret["lease_duration"].(float64))
-	d.Set("lease_renewable", secret["renewable"].(bool))
-	d.Set("lease_start_time", time.Now().Format("RFC3339"))
-
-	auth := secret["auth"].(map[string]interface{})
-
-	d.Set("token", auth["client_token"].(string))
 
 	return nil
 }
