@@ -126,7 +126,7 @@ func vaultTokenDataSourceRead(d *schema.ResourceData, meta interface{}) error {
 	RootCAPath := filepath.Join(CACertDir, CACertFile)
 
 	if RootCAPath != "" {
-		crt, err := ioutil.ReadFile("./cert/public.crt")
+		crt, err := ioutil.ReadFile(RootCAPath)
 		if err != nil {
 			log.Fatal(err)
 		}
