@@ -3,8 +3,8 @@ services:
   - docker
 language: go
 go:
-  - 1.9
   - 1.11
+  - 1.15
 
 before_install:
   # Setup dependency management tool

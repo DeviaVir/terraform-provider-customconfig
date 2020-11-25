@@ -2,12 +2,14 @@ package customconfig
 
 import (
 	"bytes"
+	"crypto/tls"
+	"crypto/x509"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
-	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -18,6 +20,13 @@ func vaultTokenDataSource() *schema.Resource {
 		Read: vaultTokenDataSourceRead,
 
 		Schema: map[string]*schema.Schema{
+			"address": {
+				Type:        schema.TypeString,
+				Required:    true,
+				DefaultFunc: schema.EnvDefaultFunc("VAULT_ADDR", nil),
+				Description: "URL of the root of the target Vault server.",
+			},
+
 			"role_id": {
 				Type:        schema.TypeString,
 				Required:    true,
@@ -35,6 +44,33 @@ func vaultTokenDataSource() *schema.Resource {
 				Optional:    true,
 				Default:     "ptfe",
 				Description: "Approle Backend to use, ptfe by default.",
+			},
+
+			"debug": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "Flag to write more data to the debug log",
+			},
+
+			"ca_cert_file": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				DefaultFunc: schema.EnvDefaultFunc("VAULT_CACERT", ""),
+				Description: "Path to a CA certificate file to validate the server's certificate.",
+			},
+
+			"ca_cert_dir": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				DefaultFunc: schema.EnvDefaultFunc("VAULT_CAPATH", ""),
+				Description: "Path to directory containing CA certificate files to validate the server's certificate.",
+			},
+
+			"skip_tls_verify": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				DefaultFunc: schema.EnvDefaultFunc("VAULT_SKIP_VERIFY", false),
+				Description: "Set this to true only if the target Vault server is an insecure development instance.",
 			},
 
 			"data_json": {
@@ -68,12 +104,6 @@ func vaultTokenDataSource() *schema.Resource {
 				Computed:    true,
 				Description: "The token lease started on.",
 			},
-
-			"debug": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Description: "Flag to write more data to the debug log",
-			},
 		},
 	}
 }
@@ -89,6 +119,28 @@ func vaultTokenDataSourceRead(d *schema.ResourceData, meta interface{}) error {
 		log.Printf("[DEBUG] Reading %s %d from Vault", roleID, secretID)
 	}
 
+	// handle SSL
+	skipTLSVerify := d.Get("skip_tls_verify").(bool)
+	CACertDir := d.Get("ca_cert_dir").(string)
+	CACertFile := d.Get("ca_cert_file").(string)
+	RootCAPath := filepath.Join(CACertDir, CACertFile)
+
+	if RootCAPath != "" {
+		crt, err := ioutil.ReadFile("./cert/public.crt")
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		rootCAs := x509.NewCertPool()
+		rootCAs.AppendCertsFromPEM(crt)
+		http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{
+			InsecureSkipVerify: skipTLSVerify,
+			RootCAs:            rootCAs,
+		}
+	} else {
+		http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: skipTLSVerify}
+	}
+
 	backend := d.Get("backend").(string)
 
 	requestBody, err := json.Marshal(map[string]string{
@@ -99,7 +151,7 @@ func vaultTokenDataSourceRead(d *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("error creating request body json: %s", err)
 	}
 
-	addr := os.Getenv("VAULT_ADDR")
+	addr := d.Get("address").(string)
 	err = retry(func() error {
 		dataJSON, secret, err := vaultTokenDataSourceReadCall(requestBody, addr, backend, debug)
 		if debug {
