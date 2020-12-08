@@ -77,12 +77,14 @@ func vaultTokenDataSource() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "JSON-encoded secret data read from Vault.",
+				Sensitive:   true,
 			},
 
 			"token": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The role/secret generated Vault auth token.",
+				Sensitive:   true,
 			},
 
 			"renewable": {
